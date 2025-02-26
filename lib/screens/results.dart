@@ -163,7 +163,9 @@ class bmiResult extends StatelessWidget {
                 backgroundColor: activeColor,
                 shadowColor: Colors.black,
               ),
-              onPressed: () {},
+              onPressed: () {
+                Navigator.pop(context);
+              },
               child: Container(
                 width: double.infinity,
                 decoration: BoxDecoration(),
