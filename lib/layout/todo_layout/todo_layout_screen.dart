@@ -1,125 +1,175 @@
 import 'package:flutter/material.dart';
-import 'package:msp_project/modules/todo_app/todo_archived_screen.dart';
-import 'package:msp_project/modules/todo_app/todo_done_screen.dart';
-import 'package:msp_project/modules/todo_app/todo_screen.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:intl/intl.dart';
+import 'package:msp_project/layout/todo_layout/cubit/todo_cubit.dart';
+import 'package:msp_project/layout/todo_layout/cubit/todo_states.dart';
 
 class TodoLayoutScreen extends StatefulWidget {
-  TodoLayoutScreen({super.key});
+  const TodoLayoutScreen({super.key});
 
   @override
   State<TodoLayoutScreen> createState() => _TodoLayoutScreenState();
 }
 
 class _TodoLayoutScreenState extends State<TodoLayoutScreen> {
-  int currentIndex = 0;
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  List<String> titles = [
-    'Todo',
-    'Done',
-    'Archived'
-  ];
-  List<Widget> screens = [
-    TodoScreen(),
-    TodoDoneScreen(),
-    TodoArchivedScreen()
-  ];
 
-  final TextEditingController _TaskTitleController = TextEditingController();
-  final TextEditingController _TaskDateController = TextEditingController();
-  final TextEditingController _TaskTimeController = TextEditingController();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  final TextEditingController _taskTitleController = TextEditingController();
+  final TextEditingController _taskDateController = TextEditingController();
+  final TextEditingController _taskTimeController = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: AppBar(
-        title: Text(titles[currentIndex]),
-        centerTitle: true,
-      ),
-      body: screens[currentIndex],
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: currentIndex,
-        items: [
-          BottomNavigationBarItem(icon: Icon(Icons.timer_sharp,), label: 'Todo'),
-          BottomNavigationBarItem(icon: Icon(Icons.check_box_outlined), label: 'Done'),
-          BottomNavigationBarItem(icon: Icon(Icons.archive), label: 'Archived'),
-        ],
-        onTap: (newValue){
-          setState(() {
-            currentIndex = newValue;
-          });
+    return BlocProvider(
+      create: (context) => TodoCubit(),
+      child: BlocConsumer<TodoCubit, TodoStates>(
+        listener: (context, state){
+          //TODO: Add pop for Bottom Navigation Bar After Adding New Task
         },
-      ),
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: (){
-          _scaffoldKey.currentState!.showBottomSheet(
-            (context) => _bottomSheetBuilder(),
-          );
-        }
-      ),
-    );
-  }
-
-  Widget _bottomSheetBuilder(){
-    return Container(
-      padding: EdgeInsets.all(20),
-      height: 300,
-      child: Form(
-        child: Column(
-          children: [
-            TextFormField(
-              controller: _TaskTitleController,
-              decoration: InputDecoration(
-                label: Text('Task Title'),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
+        builder: (context, state) {
+          TodoCubit cubit = TodoCubit.get(context);
+          return Scaffold(
+          key: _scaffoldKey,
+          appBar: AppBar(
+            title: Text(cubit.titles[cubit.currentIndex], style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),),
+            centerTitle: true,
+          ),
+          body: cubit.screens[cubit.currentIndex],
+          bottomNavigationBar: BottomNavigationBar(
+            currentIndex: cubit.currentIndex,
+            items: [
+              BottomNavigationBarItem(icon: Icon(Icons.access_time_outlined), label: 'Todo'),
+              BottomNavigationBarItem(icon: Icon(Icons.check_box), label: 'Done'),
+              BottomNavigationBarItem(icon: Icon(Icons.archive), label: 'Archived'),
+            ],
+            onTap: (newIndex){
+              cubit.changeBottomNavBarIndex(newIndex);
+            },
+          ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: (){
+              if(cubit.isBottomSheetShown){
+                if(_formKey.currentState!.validate()){
+                  print('validated');
+                }
+                print('Bottom Sheet is Visible');
+              } else{
+                _scaffoldKey.currentState!.showBottomSheet((context)=>Container(
+                height: 300,
+                padding: EdgeInsets.all(35),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      //TODO: add it to component file
+                      TextFormField(
+                        controller: _taskTitleController,
+                        keyboardType: TextInputType.text,
+                        decoration: InputDecoration(
+                          hintText: 'Task Title',
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(color: Colors.blue)
+                          ),
+                          prefixIcon: Icon(Icons.abc),
+                        ),
+                        validator: (value){
+                          if(value == null || value.isEmpty){
+                            return 'This field must not be empty';
+                          }
+                          return null;
+                        },
+                      ),
+                      SizedBox(height: 20,),
+                      InkWell(
+                        onTap: () {
+                          showDatePicker(context: context, firstDate: DateTime.now(), lastDate: DateTime.parse('2027-12-31')).then((value){
+                            if(value != null){
+                              _taskDateController.text = DateFormat.yMMMd().format(value);
+                            }
+                          });
+                        },
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: _taskDateController,
+                            keyboardType: TextInputType.none,
+                            decoration: InputDecoration(
+                              hintText: 'Task Date',
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: Colors.blue)
+                              ),
+                              prefixIcon: Icon(Icons.date_range),
+                            ),
+                            validator: (value){
+                              if(value == null || value.isEmpty){
+                                return 'This field must not be empty';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20,),
+                      InkWell(
+                        onTap: () {
+                          showTimePicker(context: context, initialTime: TimeOfDay.now()).then((value){
+                            if(value != null){
+                              _taskTimeController.text = value.format(context).toString();
+                            }
+                          });
+                        },
+                        //TODO: add it to component file
+                        child: AbsorbPointer(
+                          child: TextFormField(
+                            controller: _taskTimeController,
+                            keyboardType: TextInputType.none,
+                            decoration: InputDecoration(
+                              hintText: 'Task Time',
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                  borderSide: BorderSide(color: Colors.blue)
+                              ),
+                              prefixIcon: Icon(Icons.timer),
+                            ),
+                            validator: (value){
+                              if(value == null || value.isEmpty){
+                                return 'This field must not be empty';
+                              }
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+                      SizedBox(height: 20,),
+                    ],
+                  ),
                 ),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                prefixIcon: Icon(Icons.text_format),
-              ),
-              keyboardType: TextInputType.text,
-            ),
-            SizedBox(height: 20,),
-            TextFormField(
-              controller: _TaskDateController,
-              decoration: InputDecoration(
-                label: Text('Task Date'),
-                enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)
-                ),
-                prefixIcon: Icon(Icons.date_range),
-              ),
-              keyboardType: TextInputType.datetime,
-              onTap: () async {
-                _TaskDateController.text = await showDatePicker(context: context, firstDate: DateTime.now(), lastDate: DateTime(2027)).toString();
-              },
-            ),
-            SizedBox(height: 20,),
-            TextFormField(
-              controller: _TaskTimeController,
-              decoration: InputDecoration(
-                label: Text('Task Time'),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10)
-                ),
-                prefixIcon: Icon(Icons.timer),
-              ),
-              keyboardType: TextInputType.datetime,
-              onTap: () async{
-                _TaskTimeController.text = await showTimePicker(context: context, initialTime: TimeOfDay.now()).toString();
-              },
-            ),
-          ],
-        ),
+              )).closed.then((value){
+                cubit.changeBottomSheetState(icon: Icons.edit);
+                _taskTitleController.clear();
+                _taskDateController.clear();
+                _taskTimeController.clear();
+              });
+                cubit.changeBottomSheetState(icon: Icons.add, isBottomShown: true);
+              }
+            },
+            child: Icon(cubit.fabIcon),
+          ),
+        );
+        },
       ),
     );
   }

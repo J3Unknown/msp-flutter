@@ -6,30 +6,29 @@ class TodoArchivedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
-        itemBuilder: (context,index) => _taskBuilder(),
-        separatorBuilder: (context, index) => Divider(height: 0, color: Colors.yellow, thickness: 2,),
-        itemCount: 5
+      itemBuilder: (context, index) => _taskBuilder(),
+      separatorBuilder: (context, index) => Divider(
+        thickness: 1.5,
+        color: Colors.yellow,
+      ),
+      itemCount: 5,
     );
   }
 
-  Widget _taskBuilder(){
-    return  Container(
-      color: Colors.grey,
-      child: Row(
-        children: [
-          Checkbox(value: false, onChanged: (newValue){}),
-          Expanded(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Task Name'),
-                Text('Task Date and Time'),
-              ],
-            ),
-          ),
-          IconButton(onPressed: (){}, icon: Icon(Icons.archive))
-        ],
+  Widget _taskBuilder() => Row(
+    children: [
+      Checkbox(value: false, onChanged: (checked){}),
+      Expanded(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Task Name', style: TextStyle(fontSize: 24),),
+            Text('Task Date And Time', style: TextStyle(color: Colors.grey),),
+          ],
+        ),
       ),
-    );
-  }
+      IconButton(onPressed: (){}, icon: Icon(Icons.archive))
+    ],
+  );
 }
