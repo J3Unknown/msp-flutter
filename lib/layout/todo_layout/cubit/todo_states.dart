@@ -6,4 +6,12 @@ class TodoBottomNavBarChangeIndexState extends TodoStates{}
 
 class TodoChangeBottomSheetState extends TodoStates{}
 
-class TodoChangeDismissibleState extends TodoStates{}
+class TodoCreateDatabaseSuccessState extends TodoStates{}
+
+class TodoGetDataFromDatabaseLoadingState extends TodoStates{}
+
+class TodoGetDataFromDatabaseSuccessState extends TodoStates{}
+
+class TodoInsertDataIntoDatabaseSuccessState extends TodoStates{}
+
+class TodoDismissibleDeleteState extends TodoStates{}

@@ -1,34 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:msp_project/layout/todo_layout/cubit/todo_cubit.dart';
+import 'package:msp_project/shared/components/components.dart';
+import '../../layout/todo_layout/cubit/todo_states.dart';
 
 class TodoDoneScreen extends StatelessWidget {
   const TodoDoneScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return ListView.separated(
-      itemBuilder: (context, index) => _taskBuilder(),
-      separatorBuilder: (context, index) => Divider(
-        thickness: 1.5,
-        color: Colors.yellow,
-      ),
-      itemCount: 15,
+    return BlocConsumer<TodoCubit, TodoStates>(
+      listener: (context, state) {},
+      builder: (context, state) =>
+        taskBuilder(
+          TodoCubit.get(context).doneTasks,
+          state
+        ),
     );
   }
-
-  Widget _taskBuilder() => Row(
-    children: [
-      Checkbox(value: false, onChanged: (checked){}),
-      Expanded(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text('Task Name', style: TextStyle(fontSize: 24),),
-            Text('Task Date And Time', style: TextStyle(color: Colors.grey),),
-          ],
-        ),
-      ),
-      IconButton(onPressed: (){}, icon: Icon(Icons.archive))
-    ],
-  );
 }
